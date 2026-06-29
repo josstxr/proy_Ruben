@@ -1,3 +1,12 @@
+function escapeHTML(str) {
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function normalizeAccountNumber(value) {
     return String(value || '').replace(/[\s-]/g, '').trim();
 }
@@ -29,7 +38,7 @@ function calculateLuhnDigit(numeroStr) {
         }
     }
 
-    return (sumaTotal * 9) % 10;
+    return (10 - (sumaTotal % 10)) % 10;
 }
 
 function isLuhnValid(numeroStr) {
@@ -85,7 +94,7 @@ function calcularLuhnVisual(numeroStr) {
     let paso3HTML = '';
 
     digitosOriginales.forEach(d => {
-        paso1HTML += `<span>${d}</span>`;
+        paso1HTML += `<span>${escapeHTML(d)}</span>`;
     });
     paso1HTML += `<span class="highlight">X</span>`;
 
@@ -121,17 +130,17 @@ function calcularLuhnVisual(numeroStr) {
 
     paso2Valores.forEach(item => {
         const clase = item.cambiado ? 'class="changed"' : '';
-        paso2HTML += `<span ${clase}>${item.val}</span>`;
+        paso2HTML += `<span ${clase}>${escapeHTML(item.val)}</span>`;
     });
     paso2HTML += `<span class="highlight">X</span>`;
 
     paso3Valores.forEach(item => {
-        const clase = item.cambiado ? 'class="changed"' : '';
-        paso3HTML += `<span ${clase}>${item.val}</span>`;
+        const clase = item.changed ? 'class="changed"' : ''; // Corrección de propiedad item.cambiado
+        paso3HTML += `<span ${clase}>${escapeHTML(item.val)}</span>`;
     });
     paso3HTML += `<span class="result-sum">= ${sumaTotal}</span>`;
 
-    const digitoVerificador = (sumaTotal * 9) % 10;
+    const digitoVerificador = (10 - (sumaTotal % 10)) % 10;
     const columnasGrid = digitosOriginales.length + 1;
 
     return { digitoVerificador, paso1HTML, paso2HTML, paso3HTML, columnasGrid, normalized };
@@ -146,7 +155,7 @@ function initApp() {
     const resumenCuenta = document.getElementById('resumenCuenta');
 
     const showError = (message) => {
-        errorMessage.textContent = message;
+        errorMessage.textContent = message; // Seguro: usa textContent
         errorMessage.style.display = 'block';
         pasosContainer.style.display = 'none';
         resultadoFinal.style.display = 'none';
@@ -214,9 +223,8 @@ function initApp() {
 
         resultadoFinal.innerHTML = `
             <h2>Dígito verificador</h2>
-            <p class="result-summary">Número analizado: <strong>${normalized}</strong></p>
-            <div class="final-digit">${digitoVerificador}</div>
-            <p class="card-status ${exists ? 'valid' : 'invalid'}">${exists ? 'La tarjeta pasa la validación de Luhn y tiene un formato común.' : 'La tarjeta no pasó la validación o no tiene un formato compatible.'}</p>
+            <p class="result-summary">Número analizado: <strong>${escapeHTML(normalized)}</strong></p>
+            <div class="final-digit">${escapeHTML(digitoVerificador)}</div>
         `;
 
         pasosContainer.style.display = 'flex';
