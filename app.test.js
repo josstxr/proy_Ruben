@@ -18,5 +18,6 @@ test('calcula el dígito verificador para una tarjeta válida', () => {
 
 test('detecta si una tarjeta parece existir', () => {
   assert.equal(checkCardExistence('4111111111111111'), true);
+  assert.equal(checkCardExistence('4111111111111112'), false);
   assert.equal(checkCardExistence('0000000000000000'), false);
 });

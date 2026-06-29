@@ -67,16 +67,13 @@ function checkCardExistence(numeroStr) {
         return false;
     }
 
-    const knownPrefixes = ['41', '51', '52', '53', '54', '55', '34', '37', '4', '5'];
-
     if (normalized.length < 12 || normalized.length > 19) {
         return false;
     }
 
-    const hasKnownPrefix = knownPrefixes.some(prefix => normalized.startsWith(prefix));
     const hasNotAllSameDigits = !/^(\d)\1+$/.test(normalized);
 
-    return hasKnownPrefix && hasNotAllSameDigits && isLuhnValid(normalized);
+    return hasNotAllSameDigits && isLuhnValid(normalized);
 }
 
 function calcularLuhnVisual(numeroStr) {
@@ -219,7 +216,7 @@ function initApp() {
             <h2>Dígito verificador</h2>
             <p class="result-summary">Número analizado: <strong>${normalized}</strong></p>
             <div class="final-digit">${digitoVerificador}</div>
-            <p class="card-status ${exists ? 'valid' : 'invalid'}">${exists ? 'La tarjeta parece válida y existente.' : 'La tarjeta no coincide con un patrón de tarjeta común o no pasó la validación.'}</p>
+            <p class="card-status ${exists ? 'valid' : 'invalid'}">${exists ? 'La tarjeta pasa la validación de Luhn y tiene un formato común.' : 'La tarjeta no pasó la validación o no tiene un formato compatible.'}</p>
         `;
 
         pasosContainer.style.display = 'flex';
@@ -243,6 +240,7 @@ if (typeof module !== 'undefined' && module.exports) {
         normalizeAccountNumber,
         validateAccountNumber,
         calculateLuhnDigit,
+        isLuhnValid,
         checkCardExistence
     };
 }
