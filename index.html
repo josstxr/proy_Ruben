@@ -12,43 +12,17 @@
             <h1>Algoritmo de Luhn</h1>
             <p>Ingrese el número para generar el dígito verificador:</p>
             <div class="input-group">
-                <input type="text" id="numeroCuenta" value="7992739871" readonly>
+                <input type="text" id="numeroCuenta" placeholder="Ej: 7992739871" autocomplete="off">
                 <button id="btnGenerar">Generar Dígito Verificador</button>
             </div>
+            <p id="error-message" style="color: #e53e3e; margin-top: 10px; display: none; font-weight: bold;"></p>
         </header>
 
-        <section class="steps-container">
-            <div class="step-box">
-                <h2>1. Dígitos del número de cuenta</h2>
-                <div class="grid-numbers">
-                    <span>7</span><span>9</span><span>9</span><span>2</span><span>7</span>
-                    <span>3</span><span>9</span><span>8</span><span>7</span><span>1</span>
-                    <span class="highlight">X</span>
-                </div>
-            </div>
+        <section class="steps-container" id="pasosGenerados" style="display: none;"></section>
 
-            <div class="step-box">
-                <h2>2. Duplicar dígitos pares</h2>
-                <div class="grid-numbers">
-                    <span>7</span><span class="changed">18</span><span>9</span><span class="changed">4</span><span>7</span>
-                    <span class="changed">6</span><span>9</span><span class="changed">16</span><span>7</span><span class="changed">2</span>
-                    <span class="highlight">X</span>
-                </div>
-            </div>
-
-            <div class="step-box">
-                <h2>3. Sumar los dígitos</h2>
-                <div class="grid-numbers">
-                    <span>7</span><span class="changed">1+8</span><span>9</span><span class="changed">4</span><span>7</span>
-                    <span class="changed">6</span><span>9</span><span class="changed">1+6</span><span>7</span><span class="changed">2</span>
-                    <span class="result-sum">= 67</span>
-                </div>
-            </div>
-        </section>
-
-        <footer class="result-container">
-            <h2>Dígito Verificador: <span class="final-digit">3</span></h2>
-        </footer>
+        <footer class="result-container" id="resultadoFinal" style="display: none;"></footer>
     </main>
+
+    <script src="app.js"></script>
 </body>
 </html>
