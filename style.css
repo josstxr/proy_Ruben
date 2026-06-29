@@ -1,0 +1,121 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+:root {
+    --primary-color: #005f73;
+    --secondary-color: #0a9396;
+    --background-color: #f4f4f9;
+    --text-color: #333;
+    --white-color: #ffffff;
+    --error-color: #d90429;
+    --border-radius: 8px;
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    background: var(--white-color);
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 20px;
+}
+
+header h1 {
+    color: var(--primary-color);
+    margin: 0;
+}
+
+.calculator .input-group {
+    display: flex;
+    gap: 10px;
+}
+
+#numeroBase {
+    flex-grow: 1;
+    padding: 12px 15px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: var(--border-radius);
+    transition: border-color 0.3s;
+}
+
+#numeroBase:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+#calcularBtn {
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: 500;
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#calcularBtn:hover {
+    background-color: var(--secondary-color);
+}
+
+.error-message {
+    color: var(--error-color);
+    font-weight: 500;
+    margin-top: 10px;
+}
+
+.resultado-container {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.resultado-container h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+#procedimiento-pasos p {
+    background-color: #e9f5f5;
+    padding: 10px;
+    border-left: 4px solid var(--secondary-color);
+    margin-bottom: 10px;
+    border-radius: 4px;
+    word-wrap: break-word;
+}
+
+.resultado-final {
+    margin-top: 25px;
+    padding: 20px;
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border-radius: var(--border-radius);
+    text-align: center;
+    font-size: 1.2em;
+}
+
+.resultado-final span {
+    font-weight: 700;
+    font-size: 1.3em;
+}

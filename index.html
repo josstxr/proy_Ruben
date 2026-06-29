@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Dígito Verificador (Módulo 11)</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main class="container">
+        <header>
+            <h1>Calculadora de Dígito Verificador</h1>
+            <p>Ingresa un número base para calcular su dígito verificador usando el algoritmo Módulo 11.</p>
+        </header>
+
+        <section class="calculator">
+            <div class="input-group">
+                <input type="text" id="numeroBase" placeholder="Ej: 12345678" autocomplete="off">
+                <button id="calcularBtn">Calcular</button>
+            </div>
+            <div id="error-message" class="error-message" style="display: none;"></div>
+        </section>
+
+        <section id="resultado" class="resultado-container" style="display: none;">
+            <h2>Procedimiento y Resultado</h2>
+            <div id="procedimiento-pasos">
+                <!-- Los pasos del cálculo se insertarán aquí dinámicamente -->
+            </div>
+            <div class="resultado-final">
+                <p>El dígito verificador es: <span id="digitoVerificador"></span></p>
+                <p>Número completo: <span id="numeroCompleto"></span></p>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
