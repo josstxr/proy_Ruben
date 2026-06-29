@@ -10,12 +10,13 @@
     <main class="container">
         <header>
             <h1>Algoritmo de Luhn</h1>
-            <p>Ingrese el número para generar el dígito verificador:</p>
+            <p>Ingresa el número de cuenta para ver cómo se obtiene el dígito verificador.</p>
             <div class="input-group">
-                <input type="text" id="numeroCuenta" placeholder="Ej: 7992739871" autocomplete="off">
-                <button id="btnGenerar">Generar Dígito Verificador</button>
+                <input type="text" id="numeroCuenta" inputmode="numeric" pattern="[0-9\s-]*" placeholder="Ej: 7992 7398 71" autocomplete="off">
+                <button id="btnGenerar">Generar dígito verificador</button>
             </div>
-            <p id="error-message" style="color: #e53e3e; margin-top: 10px; display: none; font-weight: bold;"></p>
+            <p class="helper-text" id="resumenCuenta">Puedes ingresar espacios o guiones y se tomarán como parte del número.</p>
+            <p id="error-message" class="error-message" aria-live="polite"></p>
         </header>
 
         <section class="steps-container" id="pasosGenerados" style="display: none;"></section>
