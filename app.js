@@ -41,6 +41,50 @@ function calculateLuhnDigit(numeroStr) {
     return (10 - (sumaTotal % 10)) % 10;
 }
 
+function isLuhnValid(numeroStr) {
+    const normalized = normalizeAccountNumber(numeroStr);
+
+    if (!validateAccountNumber(normalized)) {
+        return false;
+    }
+
+    const digits = [...normalized].map(Number);
+    let sumaTotal = 0;
+    let duplicar = false;
+
+    for (let index = digits.length - 1; index >= 0; index--) {
+        let digito = digits[index];
+
+        if (duplicar) {
+            digito *= 2;
+            if (digito > 9) {
+                digito -= 9;
+            }
+        }
+
+        sumaTotal += digito;
+        duplicar = !duplicar;
+    }
+
+    return sumaTotal % 10 === 0;
+}
+
+function checkCardExistence(numeroStr) {
+    const normalized = normalizeAccountNumber(numeroStr);
+
+    if (!validateAccountNumber(normalized)) {
+        return false;
+    }
+
+    if (normalized.length < 12 || normalized.length > 19) {
+        return false;
+    }
+
+    const hasNotAllSameDigits = !/^(\d)\1+$/.test(normalized);
+
+    return hasNotAllSameDigits && isLuhnValid(normalized);
+}
+
 function calcularLuhnVisual(numeroStr) {
     const normalized = normalizeAccountNumber(numeroStr);
     const digitosOriginales = [...normalized];
@@ -134,7 +178,7 @@ function initApp() {
 
         if (resumenCuenta) {
             const normalized = normalizeAccountNumber(inputNumero.value);
-            resumenCuenta.textContent = normalized ? `Se analizará: ${escapeHTML(normalized)}` : 'Puedes ingresar espacios o guiones.';
+            resumenCuenta.textContent = normalized ? `Se analizará la tarjeta: ${normalized}` : 'Puedes ingresar espacios o guiones.';
         }
     });
 
@@ -142,7 +186,7 @@ function initApp() {
         const numeroBase = normalizeAccountNumber(inputNumero.value);
 
         if (!numeroBase) {
-            showError('Ingresa un número de cuenta para continuar.');
+            showError('Ingresa un número de tarjeta para continuar.');
             return;
         }
 
@@ -154,10 +198,11 @@ function initApp() {
         clearError();
         const resultado = calcularLuhnVisual(numeroBase);
         const { digitoVerificador, paso1HTML, paso2HTML, paso3HTML, columnasGrid, normalized } = resultado;
+        const exists = checkCardExistence(numeroBase);
 
         pasosContainer.innerHTML = `
             <div class="step-box">
-                <h2>1. Dígitos del número de cuenta</h2>
+                <h2>1. Dígitos del número de tarjeta</h2>
                 <div class="grid-numbers" style="grid-template-columns: repeat(${columnasGrid}, 1fr);">
                     ${paso1HTML}
                 </div>
@@ -202,6 +247,8 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         normalizeAccountNumber,
         validateAccountNumber,
-        calculateLuhnDigit
+        calculateLuhnDigit,
+        isLuhnValid,
+        checkCardExistence
     };
 }
