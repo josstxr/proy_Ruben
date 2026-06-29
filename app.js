@@ -1,99 +1,188 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const inputNumeroBase = document.getElementById('numeroBase');
-    const btnCalcular = document.getElementById('calcularBtn');
-    const errorMessage = document.getElementById('error-message');
-    const resultadoContainer = document.getElementById('resultado');
-    const procedimientoPasos = document.getElementById('procedimiento-pasos');
-    const spanDigitoVerificador = document.getElementById('digitoVerificador');
-    const spanNumeroCompleto = document.getElementById('numeroCompleto');
+    // 1. Vinculación exacta con los IDs de tu interfaz gráfica
+    const inputNumeroBase = document.getElementById('accountNumber') || document.getElementById('numeroBase');
+    const btnCalcular = document.getElementById('calcularBtn') || document.querySelector('button');
+    const stepsContainer = document.getElementById('stepsContainer') || document.getElementById('resultado');
+    
+    const grid1 = document.getElementById('gridStep1');
+    const grid2 = document.getElementById('gridStep2');
+    const grid3 = document.getElementById('gridStep3');
+    const finalDigitSpan = document.getElementById('finalDigit') || document.getElementById('digitoVerificador');
+
+    if (!btnCalcular || !inputNumeroBase) return;
 
     btnCalcular.addEventListener('click', () => {
         const numeroBase = inputNumeroBase.value.trim();
 
-        // Validación de entrada: solo números y no vacío 
-        if (!/^\d+$/.test(numeroBase)) {
-            mostrarError("Por favor, ingresa únicamente números válidos.");
+        // Validación y sanitización: solo números sin espacios ni guiones
+        const cleanInput = numeroBase.replace(/[^0-9]/g, '');
+
+        if (!cleanInput) {
+            alert("Por favor, ingresa únicamente números válidos.");
             return;
         }
 
-        ocultarError();
+        procesarAlgoritmoLuhn(cleanInput);
+    });
+
+    function procesarAlgoritmoLuhn(numeroStr) {
+        let totalSum = 0;
+        let digits = numeroStr.split('').map(Number);
+        let len = digits.length;
+
+        // Limpiamos los contenedores de cuadrículas antes de realizar un nuevo cálculo
+        if(grid1) grid1.innerHTML = '';
+        if(grid2) grid2.innerHTML = '';
+        if(grid3) grid3.innerHTML = '';
+
+        // Recorremos los dígitos de izquierda a derecha preservando el orden visual del Mockup
+        for (let i = 0; i < len; i++) {
+            let d = digits[i];
+
+            // PASO 1: Inyectar el dígito original en la primera cuadrícula
+            if(grid1) grid1.innerHTML += `<span>${d}</span>`;
+
+            // Determinamos la distancia desde la derecha (el extremo antes de la 'X')
+            let distanceFromRight = len - 1 - i;
+
+            // Corregido: Duplicar posiciones alternas de manera que el elemento inmediato a la izquierda de 'X' se duplique
+            if (distanceFromRight % 2 === 0) {
+                let doubled = d * 2;
+                if(grid2) grid2.innerHTML += `<span class="changed">${doubled}</span>`;
+
+                // PASO 3: Sumar los componentes individuales o restar 9 [cite: 15, 33]
+                if (doubled > 9) {
+                    let d1 = Math.floor(doubled / 10);
+                    let d2 = doubled % 10;
+                    let singleSum = d1 + d2;
+                    totalSum += singleSum;
+                    if(grid3) grid3.innerHTML += `<span class="changed">${d1}+${d2}</span>`;
+                } else {
+                    totalSum += doubled;
+                    if(grid3) grid3.innerHTML += `<span class="changed">${doubled}</span>`;
+                }
+            } else {
+                // Las posiciones que no se duplican pasan exactamente igual [cite: 15]
+                if(grid2) grid2.innerHTML += `<span>${d}</span>`;
+                if(grid3) grid3.innerHTML += `<span>${d}</span>`;
+                totalSum += d;
+            }
+        }
+
+        // Incorporación de elementos de control visual fijos solicitados en el diseño
+        if(grid1) grid1.innerHTML += `<span class="highlight">X</span>`;
+        if(grid2) grid2.innerHTML += `<span class="highlight">X</span>`;
+        if(grid3) grid3.innerHTML += `<span class="result-sum">= ${totalSum}</span>`;
+
+        // Cálculo final del Dígito de Control usando el complemento a 10 [cite: 25]
+        let unidades = totalSum % 10;
+        let digitoVerificador = unidades === 0 ? 0 : 10 - unidades;
+
+        // Mostrar el resultado en el contenedor destacado
+        if (finalDigitSpan) {
+            finalDigitSpan.innerText = digitoVerificador;
+        }
+
+        // Hacemos visible el panel completo con el desglose paso a paso
+        if (stepsContainer) {
+            stepsContainer.style.display = 'flex';
+            stepsContainer.classList.remove('hidden'); // Soporte por si usas clases utilitarias
+        }
+    }
+});
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Vinculación exacta con los IDs de tu interfaz gráfica
+    const inputNumeroBase = document.getElementById('accountNumber') || document.getElementById('numeroBase');
+    const btnCalcular = document.getElementById('calcularBtn') || document.querySelector('button');
+    const stepsContainer = document.getElementById('stepsContainer') || document.getElementById('resultado');
+    
+    const grid1 = document.getElementById('gridStep1');
+    const grid2 = document.getElementById('gridStep2');
+    const grid3 = document.getElementById('gridStep3');
+    const finalDigitSpan = document.getElementById('finalDigit') || document.getElementById('digitoVerificador');
+
+    if (!btnCalcular || !inputNumeroBase) return;
+
+    // === BLOQUEO EN TIEMPO REAL: NO PERMITIR LETRAS NI SÍMBOLOS ===
+    inputNumeroBase.addEventListener('input', (e) => {
+        // Reemplaza instantáneamente cualquier caracter que NO sea un número del 0 al 9
+        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+    });
+
+    btnCalcular.addEventListener('click', () => {
+        const numeroBase = inputNumeroBase.value.trim();
+
+        // Validación extra por si acaso
+        if (!numeroBase) {
+            alert("Por favor, ingresa únicamente números válidos.");
+            return;
+        }
+
         procesarAlgoritmoLuhn(numeroBase);
     });
 
     function procesarAlgoritmoLuhn(numeroStr) {
-        let sumaTotal = 0;
-        let digitosOriginales = numeroStr.split('');
-        let paso2Valores = [];
-        let paso3Valores = [];
+        let totalSum = 0;
+        let digits = numeroStr.split('').map(Number);
+        let len = digits.length;
 
-        // 1. Ir de derecha a izquierda duplicando cada segundo dígito [cite: 14]
-        // Invertimos el arreglo para facilitar el recorrido desde la derecha
-        let digitosInvertidos = [...digitosOriginales].reverse();
+        // Limpiamos los contenedores de cuadrículas antes de realizar un nuevo cálculo
+        if(grid1) grid1.innerHTML = '';
+        if(grid2) grid2.innerHTML = '';
+        if(grid3) grid3.innerHTML = '';
 
-        digitosInvertidos.forEach((digitoStr, index) => {
-            let digito = parseInt(digitoStr, 10);
+        // Recorremos los dígitos de izquierda a derecha preservando el orden visual del Mockup
+        for (let i = 0; i < len; i++) {
+            let d = digits[i];
 
-            // Las posiciones pares en el array invertido (0, 2, 4...) corresponden 
-            // a duplicar cada segundo dígito empezando desde la derecha
-            if (index % 2 === 0) {
-                let valorDuplicado = digito * 2;
-                paso2Valores.push(valorDuplicado);
+            // PASO 1: Inyectar el dígito original en la primera cuadrícula
+            if(grid1) grid1.innerHTML += `<span>${d}</span>`;
 
-                // 2. Sumar los dígitos del resultado si es mayor a 9 [cite: 15]
-                if (valorDuplicado > 9) {
-                    let digito1 = Math.floor(valorDuplicado / 10);
-                    let digito2 = valorDuplicado % 10;
-                    let sumaDigitos = digito1 + digito2;
-                    sumaTotal += sumaDigitos;
-                    paso3Valores.push(`${digito1}+${digito2}`);
+            // Determinamos la distancia desde la derecha (el extremo antes de la 'X')
+            let distanceFromRight = len - 1 - i;
+
+            // Duplicar posiciones alternas de manera que el elemento inmediato a la izquierda de 'X' se duplique [cite: 14]
+            if (distanceFromRight % 2 === 0) {
+                let doubled = d * 2;
+                if(grid2) grid2.innerHTML += `<span class="changed">${doubled}</span>`;
+
+                // PASO 3: Sumar los componentes individuales o restar 9 [cite: 15, 33]
+                if (doubled > 9) {
+                    let d1 = Math.floor(doubled / 10);
+                    let d2 = doubled % 10;
+                    let singleSum = d1 + d2;
+                    totalSum += singleSum;
+                    if(grid3) grid3.innerHTML += `<span class="changed">${d1}+${d2}</span>`;
                 } else {
-                    sumaTotal += valorDuplicado;
-                    paso3Valores.push(valorDuplicado.toString());
+                    totalSum += doubled;
+                    if(grid3) grid3.innerHTML += `<span class="changed">${doubled}</span>`;
                 }
             } else {
-                // Los dígitos que no se duplican se suman tal cual [cite: 15]
-                paso2Valores.push(digito);
-                paso3Valores.push(digito.toString());
-                sumaTotal += digito;
+                // Las posiciones que no se duplican pasan exactamente igual [cite: 15]
+                if(grid2) grid2.innerHTML += `<span>${d}</span>`;
+                if(grid3) grid3.innerHTML += `<span>${d}</span>`;
+                totalSum += d;
             }
-        });
+        }
 
-        // Revertimos los arreglos para mostrarlos en el orden original de izquierda a derecha
-        paso2Valores.reverse();
-        paso3Valores.reverse();
+        // Incorporación de elementos de control visual fijos solicitados en el diseño [cite: 40]
+        if(grid1) grid1.innerHTML += `<span class="highlight">X</span>`;
+        if(grid2) grid2.innerHTML += `<span class="highlight">X</span>`;
+        if(grid3) grid3.innerHTML += `<span class="result-sum">= ${totalSum}</span>`;
 
-        // 3. Obtener el dígito de chequeo (x) multiplicando la suma por 9 y tomando el último dígito [cite: 19, 21, 22, 23]
-        let multiplicacion = sumaTotal * 9;
-        let digitoVerificador = multiplicacion % 10;
+        // Cálculo final del Dígito de Control usando el complemento a 10 [cite: 25]
+        let unidades = totalSum % 10;
+        let digitoVerificador = unidades === 0 ? 0 : 10 - unidades;
 
-        mostrarResultados(digitosOriginales, paso2Valores, paso3Valores, sumaTotal, multiplicacion, digitoVerificador, numeroStr);
-    }
+        // Mostrar el resultado en el contenedor destacado [cite: 40]
+        if (finalDigitSpan) {
+            finalDigitSpan.innerText = digitoVerificador;
+        }
 
-    function mostrarResultados(originales, paso2, paso3, suma, multiplicacion, digitoVerificador, numeroOriginal) {
-        // Generar el HTML de los pasos dinámicamente
-        let htmlPasos = `
-            <p><strong>Paso 1: Dígitos originales</strong><br> ${originales.join(' | ')}</p>
-            <p><strong>Paso 2: Duplicar dígitos pares (de derecha a izquierda)</strong><br> ${paso2.join(' | ')}</p>
-            <p><strong>Paso 3: Sumar los dígitos resultantes</strong><br> ${paso3.join(' | ')} = <strong>${suma}</strong></p>
-            <p><strong>Paso 4: Cálculo del Módulo 10</strong><br> 
-               Suma (${suma}) * 9 = ${multiplicacion}.<br>
-               Tomando el último dígito de ${multiplicacion}, obtenemos el dígito de chequeo.</p>
-        `;
-
-        procedimientoPasos.innerHTML = htmlPasos;
-        spanDigitoVerificador.textContent = digitoVerificador;
-        spanNumeroCompleto.textContent = `${numeroOriginal}${digitoVerificador}`;
-        
-        resultadoContainer.style.display = 'block';
-    }
-
-    function mostrarError(mensaje) {
-        errorMessage.textContent = mensaje;
-        errorMessage.style.display = 'block';
-        resultadoContainer.style.display = 'none';
-    }
-
-    function ocultarError() {
-        errorMessage.style.display = 'none';
+        // Hacemos visible el panel completo con el desglose paso a paso
+        if (stepsContainer) {
+            stepsContainer.style.display = 'flex';
+            stepsContainer.classList.remove('hidden'); 
+        }
     }
 });

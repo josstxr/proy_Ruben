@@ -3,52 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Dígito Verificador</title>
+    <title>Algoritmo de Luhn</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <main class="container">
-        <header>
-            <h1>Algoritmo de Luhn</h1>
-            <p>Ingrese el número para generar el dígito verificador:</p>
-            <div class="input-group">
-                <input type="text" id="numeroCuenta" value="7992739871" readonly>
-                <button id="btnGenerar">Generar Dígito Verificador</button>
-            </div>
-        </header>
 
-        <section class="steps-container">
-            <div class="step-box">
-                <h2>1. Dígitos del número de cuenta</h2>
-                <div class="grid-numbers">
-                    <span>7</span><span>9</span><span>9</span><span>2</span><span>7</span>
-                    <span>3</span><span>9</span><span>8</span><span>7</span><span>1</span>
-                    <span class="highlight">X</span>
-                </div>
-            </div>
+<div class="container">
+    <header>
+        <h1>Algoritmo de Luhn</h1>
+        <p>Ingrese el número para generar el dígito verificador:</p>
+        <div class="input-group">
+            <input type="text" id="accountNumber" placeholder="Ej. 7992739871" autocomplete="off">
+            <button onclick="procesarLuhn()">Generar Dígito Verificador</button>
+        </div>
+    </header>
 
-            <div class="step-box">
-                <h2>2. Duplicar dígitos pares</h2>
-                <div class="grid-numbers">
-                    <span>7</span><span class="changed">18</span><span>9</span><span class="changed">4</span><span>7</span>
-                    <span class="changed">6</span><span>9</span><span class="changed">16</span><span>7</span><span class="changed">2</span>
-                    <span class="highlight">X</span>
-                </div>
-            </div>
+    <div class="steps-container" id="stepsContainer" style="display: none;">
+        
+        <div class="step-box">
+            <h2>1. DÍGITOS DEL NÚMERO DE CUENTA</h2>
+            <div class="grid-numbers" id="gridStep1"></div>
+        </div>
 
-            <div class="step-box">
-                <h2>3. Sumar los dígitos</h2>
-                <div class="grid-numbers">
-                    <span>7</span><span class="changed">1+8</span><span>9</span><span class="changed">4</span><span>7</span>
-                    <span class="changed">6</span><span>9</span><span class="changed">1+6</span><span>7</span><span class="changed">2</span>
-                    <span class="result-sum">= 67</span>
-                </div>
-            </div>
-        </section>
+        <div class="step-box">
+            <h2>2. DUPLICAR DÍGITOS PARES</h2>
+            <div class="grid-numbers" id="gridStep2"></div>
+        </div>
 
-        <footer class="result-container">
-            <h2>Dígito Verificador: <span class="final-digit">3</span></h2>
-        </footer>
-    </main>
+        <div class="step-box">
+            <h2>3. SUMAR LOS DÍGITOS</h2>
+            <div class="grid-numbers" id="gridStep3"></div>
+        </div>
+
+        <div class="result-container">
+            <p>Dígito Verificador: <span class="final-digit" id="finalDigit">?</span></p>
+        </div>
+
+    </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
