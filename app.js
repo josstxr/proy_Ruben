@@ -4,7 +4,7 @@ function normalizeAccountNumber(value) {
 
 function validateAccountNumber(value) {
     const normalized = normalizeAccountNumber(value);
-    return normalized.length > 0 && /^\d+$/.test(normalized);
+    return normalized.length > 0 && normalized.length <= 15 && /^\d+$/.test(normalized);
 }
 
 function calculateLuhnDigit(numeroStr) {
@@ -115,7 +115,11 @@ function initApp() {
 
     inputNumero.addEventListener('input', () => {
         const cleanedValue = inputNumero.value.replace(/[^\d\s-]/g, '');
-        if (cleanedValue !== inputNumero.value) {
+        const normalizedDraft = normalizeAccountNumber(cleanedValue);
+
+        if (normalizedDraft.length > 15) {
+            inputNumero.value = inputNumero.value.slice(0, inputNumero.value.length - 1);
+        } else if (cleanedValue !== inputNumero.value) {
             inputNumero.value = cleanedValue;
         }
 
@@ -134,7 +138,7 @@ function initApp() {
         }
 
         if (!validateAccountNumber(numeroBase)) {
-            showError('Usa solo números, espacios o guiones.');
+            showError('Usa solo números, espacios o guiones y no excedas 15 dígitos.');
             return;
         }
 
