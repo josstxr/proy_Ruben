@@ -4,7 +4,14 @@ function normalizeAccountNumber(value) {
 
 function validateAccountNumber(value) {
     const normalized = normalizeAccountNumber(value);
-    return normalized.length > 0 && normalized.length <= 24 && /^\d+$/.test(normalized);
+    return normalized.length > 0 && /^\d+$/.test(normalized);
+}
+
+function parseAccountNumbers(value) {
+    return String(value || '')
+        .split(',')
+        .map(item => normalizeAccountNumber(item))
+        .filter(Boolean);
 }
 
 function calculateLuhnDigit(numeroStr) {
@@ -114,63 +121,73 @@ function initApp() {
     };
 
     inputNumero.addEventListener('input', () => {
-        const cleanedValue = inputNumero.value.replace(/[^\d\s-]/g, '');
-        const normalizedDraft = normalizeAccountNumber(cleanedValue);
+        const cleanedValue = inputNumero.value.replace(/[^\d\s,-]/g, '');
 
-        if (normalizedDraft.length > 24) {
-            inputNumero.value = inputNumero.value.slice(0, inputNumero.value.length - 1);
-        } else if (cleanedValue !== inputNumero.value) {
+        if (cleanedValue !== inputNumero.value) {
             inputNumero.value = cleanedValue;
         }
 
         if (resumenCuenta) {
-            const normalized = normalizeAccountNumber(inputNumero.value);
-            resumenCuenta.textContent = normalized ? `Se analizará: ${normalized}` : 'Puedes ingresar espacios o guiones.';
+            const cuentas = parseAccountNumbers(inputNumero.value);
+            if (cuentas.length > 1) {
+                resumenCuenta.textContent = `Se analizarán ${cuentas.length} números separados por comas.`;
+            } else if (cuentas.length === 1) {
+                resumenCuenta.textContent = `Se analizará: ${cuentas[0]}`;
+            } else {
+                resumenCuenta.textContent = 'Puedes ingresar espacios, guiones o comas.';
+            }
         }
     });
 
     btnGenerar.addEventListener('click', () => {
-        const numeroBase = normalizeAccountNumber(inputNumero.value);
+        const cuentas = parseAccountNumbers(inputNumero.value);
 
-        if (!numeroBase) {
+        if (cuentas.length === 0) {
             showError('Ingresa un número de cuenta para continuar.');
             return;
         }
 
-        if (!validateAccountNumber(numeroBase)) {
-            showError('Usa solo números, espacios o guiones y no excedas 24 dígitos.');
+        const cuentaInvalida = cuentas.find(cuenta => !validateAccountNumber(cuenta));
+        if (cuentaInvalida) {
+            showError('Usa solo números, espacios, guiones o comas.');
             return;
         }
 
         clearError();
-        const resultado = calcularLuhnVisual(numeroBase);
-        const { digitoVerificador, paso1HTML, paso2HTML, paso3HTML, columnasGrid, normalized } = resultado;
+        const resultados = cuentas.map(calcularLuhnVisual);
 
-        pasosContainer.innerHTML = `
-            <div class="step-box">
-                <h2>1. Dígitos del número de cuenta</h2>
-                <div class="grid-numbers" style="grid-template-columns: repeat(${columnasGrid}, 1fr);">
-                    ${paso1HTML}
+        pasosContainer.innerHTML = resultados.map((resultado, index) => {
+            const { digitoVerificador, paso1HTML, paso2HTML, paso3HTML, columnasGrid, normalized } = resultado;
+            return `
+                <div class="step-box">
+                    <h2>${index + 1}. ${normalized}</h2>
+                    <div class="step-subtitle">Dígitos del número de cuenta</div>
+                    <div class="grid-numbers" style="grid-template-columns: repeat(${columnasGrid}, 1fr);">
+                        ${paso1HTML}
+                    </div>
+                    <div class="step-subtitle">Duplicar dígitos pares</div>
+                    <div class="grid-numbers" style="grid-template-columns: repeat(${columnasGrid}, 1fr);">
+                        ${paso2HTML}
+                    </div>
+                    <div class="step-subtitle">Sumar los dígitos</div>
+                    <div class="grid-numbers" style="grid-template-columns: repeat(${columnasGrid}, 1fr);">
+                        ${paso3HTML}
+                    </div>
                 </div>
-            </div>
-            <div class="step-box">
-                <h2>2. Duplicar dígitos pares</h2>
-                <div class="grid-numbers" style="grid-template-columns: repeat(${columnasGrid}, 1fr);">
-                    ${paso2HTML}
-                </div>
-            </div>
-            <div class="step-box">
-                <h2>3. Sumar los dígitos</h2>
-                <div class="grid-numbers" style="grid-template-columns: repeat(${columnasGrid}, 1fr);">
-                    ${paso3HTML}
-                </div>
-            </div>
-        `;
+            `;
+        }).join('');
 
         resultadoFinal.innerHTML = `
-            <h2>Dígito verificador</h2>
-            <p class="result-summary">Número analizado: <strong>${normalized}</strong></p>
-            <div class="final-digit">${digitoVerificador}</div>
+            <h2>${resultados.length > 1 ? 'Dígitos verificadores' : 'Dígito verificador'}</h2>
+            <p class="result-summary">Números analizados: <strong>${resultados.map(item => item.normalized).join(', ')}</strong></p>
+            <div class="results-list">
+                ${resultados.map(item => `
+                    <div class="result-item">
+                        <span class="account-number">${item.normalized}</span>
+                        <div class="final-digit">${item.digitoVerificador}</div>
+                    </div>
+                `).join('')}
+            </div>
         `;
 
         pasosContainer.style.display = 'flex';
@@ -193,6 +210,7 @@ if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         normalizeAccountNumber,
         validateAccountNumber,
+        parseAccountNumbers,
         calculateLuhnDigit
     };
 }
